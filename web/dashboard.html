@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AerialVision - Urban Traffic Monitoring</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>AerialVision</h1>
+                    <span class="subtitle">AI-Powered Traffic Monitoring</span>
+                </div>
+                <nav class="nav">
+                    <a href="#dashboard" class="nav-link active">Dashboard</a>
+                    <a href="#upload" class="nav-link">Upload</a>
+                    <a href="#api" class="nav-link">API Docs</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            
+            <!-- Problem Statement Banner -->
+            <section class="problem-banner">
+                <div class="problem-stat">
+                    <h2>$166B</h2>
+                    <p>Annual cost of traffic congestion</p>
+                </div>
+                <div class="problem-text">
+                    <h3>Traditional traffic monitoring is expensive and limited</h3>
+                    <p>AerialVision provides real-time vehicle detection and traffic analysis using AI-powered drone imagery — at 10x lower cost than traditional camera infrastructure.</p>
+                </div>
+            </section>
+
+            <!-- Upload Section -->
+            <section id="upload" class="card">
+                <h2 class="card-title">Process Traffic Imagery</h2>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept="image/*,video/*" hidden>
+                    <div class="upload-placeholder">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <p>Click to upload or drag and drop</p>
+                        <span>Images or videos of aerial traffic footage</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="detectBtn" disabled>Detect Vehicles</button>
+            </section>
+
+            <!-- Results Section -->
+            <section id="results" class="card" style="display: none;">
+                <h2 class="card-title">Detection Results</h2>
+                
+                <!-- Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span class="metric-label">Total Vehicles</span>
+                        <span class="metric-value" id="totalVehicles">0</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Cars</span>
+                        <span class="metric-value" id="carCount">0</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Trucks/Buses</span>
+                        <span class="metric-value" id="truckCount">0</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Inference Time</span>
+                        <span class="metric-value" id="inferenceTime">0ms</span>
+                    </div>
+                </div>
+
+                <!-- Result Image -->
+                <div class="result-image">
+                    <img id="resultImg" src="" alt="Detection result">
+                </div>
+
+                <!-- Detection List -->
+                <div class="detection-list">
+                    <h3>Detected Objects</h3>
+                    <div id="detectionsList"></div>
+                </div>
+            </section>
+
+            <!-- Live Stream Section -->
+            <section id="stream" class="card">
+                <h2 class="card-title">Real-Time Stream Processing</h2>
+                <div class="stream-container">
+                    <video id="videoStream" class="video-player" controls></video>
+                    <div class="stream-controls">
+                        <button class="btn btn-secondary" id="startStreamBtn">Start Camera</button>
+                        <button class="btn btn-danger" id="stopStreamBtn" disabled>Stop</button>
+                    </div>
+                </div>
+                <div class="stream-stats" id="streamStats" style="display: none;">
+                    <div class="stat-item">
+                        <span>FPS:</span>
+                        <strong id="fps">0</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>Vehicles:</span>
+                        <strong id="streamVehicles">0</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- API Documentation -->
+            <section id="api" class="card">
+                <h2 class="card-title">API Endpoints</h2>
+                
+                <div class="api-endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">POST</span>
+                        <code>/api/v1/detect</code>
+                    </div>
+                    <p class="endpoint-desc">Detect vehicles in a single image</p>
+                    <div class="code-block">
+                        <pre>curl -X POST "http://localhost:8000/api/v1/detect" \
+  -F "file=@traffic.jpg" \
+  -F "conf_threshold=0.5"</pre>
+                    </div>
+                </div>
+
+                <div class="api-endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">POST</span>
+                        <code>/api/v1/track</code>
+                    </div>
+                    <p class="endpoint-desc">Process video with multi-object tracking</p>
+                    <div class="code-block">
+                        <pre>curl -X POST "http://localhost:8000/api/v1/track" \
+  -F "file=@traffic_video.mp4"</pre>
+                    </div>
+                </div>
+
+                <div class="api-endpoint">
+                    <div class="endpoint-header">
+                        <span class="method ws">WS</span>
+                        <code>/ws/stream</code>
+                    </div>
+                    <p class="endpoint-desc">Real-time WebSocket streaming for live detection</p>
+                    <div class="code-block">
+                        <pre>const ws = new WebSocket('ws://localhost:8000/ws/stream');
+ws.send(JSON.stringify({frame: base64Image}));</pre>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 AerialVision | Built for Urban Traffic Intelligence</p>
+        </div>
+    </footer>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

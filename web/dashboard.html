@@ -3,170 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AerialVision - Urban Traffic Monitoring</title>
+    <title>AerialVision Ops Console</title>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <h1>AerialVision</h1>
-                    <span class="subtitle">AI-Powered Traffic Monitoring</span>
-                </div>
-                <nav class="nav">
-                    <a href="#dashboard" class="nav-link active">Dashboard</a>
-                    <a href="#upload" class="nav-link">Upload</a>
-                    <a href="#api" class="nav-link">API Docs</a>
-                </nav>
-            </div>
+    <div class="bg-grid"></div>
+
+    <header class="topbar">
+        <div class="brand">
+            <h1>AerialVision</h1>
+            <p>Urban Mobility Intelligence Console</p>
+        </div>
+        <div class="topbar-actions">
+            <label class="api-field" for="apiBaseInput">
+                API Base
+                <input id="apiBaseInput" type="text" value="http://localhost:8000">
+            </label>
+            <button class="btn btn-secondary" id="applyApiBaseBtn">Apply</button>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="main">
-        <div class="container">
-            
-            <!-- Problem Statement Banner -->
-            <section class="problem-banner">
-                <div class="problem-stat">
-                    <h2>$166B</h2>
-                    <p>Annual cost of traffic congestion</p>
-                </div>
-                <div class="problem-text">
-                    <h3>Traditional traffic monitoring is expensive and limited</h3>
-                    <p>AerialVision provides real-time vehicle detection and traffic analysis using AI-powered drone imagery — at 10x lower cost than traditional camera infrastructure.</p>
-                </div>
-            </section>
+    <main class="layout">
+        <section class="panel panel-hero">
+            <div class="hero-copy">
+                <p class="eyebrow">Real-Time Decision Support</p>
+                <h2>From aerial frame to congestion signal in milliseconds.</h2>
+                <p class="muted">Analyze traffic density, vehicle mix, and hotspot movement with model-backed inference and operator-friendly visual analytics.</p>
+            </div>
+            <div class="hero-kpis">
+                <article>
+                    <span id="kpiVehicles">0</span>
+                    <p>Vehicles</p>
+                </article>
+                <article>
+                    <span id="kpiDensity">0</span>
+                    <p>Density / MPX</p>
+                </article>
+                <article>
+                    <span id="kpiCongestion">LOW</span>
+                    <p>Congestion</p>
+                </article>
+            </div>
+        </section>
 
-            <!-- Upload Section -->
-            <section id="upload" class="card">
-                <h2 class="card-title">Process Traffic Imagery</h2>
-                <div class="upload-area" id="uploadArea">
-                    <input type="file" id="fileInput" accept="image/*,video/*" hidden>
-                    <div class="upload-placeholder">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="17 8 12 3 7 8"/>
-                            <line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
-                        <p>Click to upload or drag and drop</p>
-                        <span>Images or videos of aerial traffic footage</span>
-                    </div>
-                </div>
-                <button class="btn btn-primary" id="detectBtn" disabled>Detect Vehicles</button>
-            </section>
+        <section class="panel panel-control">
+            <h3>Detection Pipeline</h3>
+            <div class="upload-area" id="uploadArea">
+                <input type="file" id="fileInput" accept="image/*,video/*" hidden>
+                <p class="upload-title">Drop aerial image/video or click to select</p>
+                <p id="fileMeta" class="muted">No file selected</p>
+            </div>
 
-            <!-- Results Section -->
-            <section id="results" class="card" style="display: none;">
-                <h2 class="card-title">Detection Results</h2>
-                
-                <!-- Metrics Grid -->
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <span class="metric-label">Total Vehicles</span>
-                        <span class="metric-value" id="totalVehicles">0</span>
-                    </div>
-                    <div class="metric-card">
-                        <span class="metric-label">Cars</span>
-                        <span class="metric-value" id="carCount">0</span>
-                    </div>
-                    <div class="metric-card">
-                        <span class="metric-label">Trucks/Buses</span>
-                        <span class="metric-value" id="truckCount">0</span>
-                    </div>
-                    <div class="metric-card">
-                        <span class="metric-label">Inference Time</span>
-                        <span class="metric-value" id="inferenceTime">0ms</span>
-                    </div>
-                </div>
+            <div class="controls-grid">
+                <label>
+                    Confidence: <strong id="confValue">0.50</strong>
+                    <input type="range" id="confSlider" min="0.1" max="0.95" step="0.05" value="0.5">
+                </label>
+                <label>
+                    IoU: <strong id="iouValue">0.45</strong>
+                    <input type="range" id="iouSlider" min="0.1" max="0.95" step="0.05" value="0.45">
+                </label>
+            </div>
 
-                <!-- Result Image -->
-                <div class="result-image">
-                    <img id="resultImg" src="" alt="Detection result">
-                </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="detectBtn" disabled>Run Detection</button>
+                <button class="btn btn-secondary" id="trackBtn" disabled>Run Video Tracking</button>
+                <button class="btn btn-danger" id="downloadReportBtn" disabled>Export JSON Report</button>
+            </div>
+            <p id="statusText" class="status-text"></p>
+        </section>
 
-                <!-- Detection List -->
-                <div class="detection-list">
-                    <h3>Detected Objects</h3>
-                    <div id="detectionsList"></div>
-                </div>
-            </section>
+        <section class="panel panel-results" id="resultsPanel">
+            <h3>Inference Output</h3>
+            <div class="metrics-grid">
+                <article><span>Total</span><strong id="totalVehicles">0</strong></article>
+                <article><span>Cars + Vans</span><strong id="carCount">0</strong></article>
+                <article><span>Truck + Bus</span><strong id="truckCount">0</strong></article>
+                <article><span>Inference</span><strong id="inferenceTime">0 ms</strong></article>
+                <article><span>Avg Confidence</span><strong id="avgConf">0%</strong></article>
+                <article><span>Heavy Ratio</span><strong id="heavyRatio">0%</strong></article>
+            </div>
+            <div class="result-image">
+                <img id="resultImg" src="" alt="Detection output">
+            </div>
+            <div class="detections-wrap">
+                <h4>Top Detections</h4>
+                <div id="detectionsList"></div>
+            </div>
+        </section>
 
-            <!-- Live Stream Section -->
-            <section id="stream" class="card">
-                <h2 class="card-title">Real-Time Stream Processing</h2>
-                <div class="stream-container">
-                    <video id="videoStream" class="video-player" controls></video>
-                    <div class="stream-controls">
-                        <button class="btn btn-secondary" id="startStreamBtn">Start Camera</button>
-                        <button class="btn btn-danger" id="stopStreamBtn" disabled>Stop</button>
-                    </div>
-                </div>
-                <div class="stream-stats" id="streamStats" style="display: none;">
-                    <div class="stat-item">
-                        <span>FPS:</span>
-                        <strong id="fps">0</strong>
-                    </div>
-                    <div class="stat-item">
-                        <span>Vehicles:</span>
-                        <strong id="streamVehicles">0</strong>
-                    </div>
-                </div>
-            </section>
+        <section class="panel panel-insights">
+            <h3>Spatial Hotspots</h3>
+            <div class="hotspot-grid">
+                <div><span>Top Left</span><strong id="hsTopLeft">0</strong></div>
+                <div><span>Top Right</span><strong id="hsTopRight">0</strong></div>
+                <div><span>Bottom Left</span><strong id="hsBottomLeft">0</strong></div>
+                <div><span>Bottom Right</span><strong id="hsBottomRight">0</strong></div>
+            </div>
+            <h3 class="history-title">Recent Inference History</h3>
+            <canvas id="historyCanvas" width="800" height="220"></canvas>
+        </section>
 
-            <!-- API Documentation -->
-            <section id="api" class="card">
-                <h2 class="card-title">API Endpoints</h2>
-                
-                <div class="api-endpoint">
-                    <div class="endpoint-header">
-                        <span class="method">POST</span>
-                        <code>/api/v1/detect</code>
-                    </div>
-                    <p class="endpoint-desc">Detect vehicles in a single image</p>
-                    <div class="code-block">
-                        <pre>curl -X POST "http://localhost:8000/api/v1/detect" \
-  -F "file=@traffic.jpg" \
-  -F "conf_threshold=0.5"</pre>
-                    </div>
-                </div>
-
-                <div class="api-endpoint">
-                    <div class="endpoint-header">
-                        <span class="method">POST</span>
-                        <code>/api/v1/track</code>
-                    </div>
-                    <p class="endpoint-desc">Process video with multi-object tracking</p>
-                    <div class="code-block">
-                        <pre>curl -X POST "http://localhost:8000/api/v1/track" \
-  -F "file=@traffic_video.mp4"</pre>
-                    </div>
-                </div>
-
-                <div class="api-endpoint">
-                    <div class="endpoint-header">
-                        <span class="method ws">WS</span>
-                        <code>/ws/stream</code>
-                    </div>
-                    <p class="endpoint-desc">Real-time WebSocket streaming for live detection</p>
-                    <div class="code-block">
-                        <pre>const ws = new WebSocket('ws://localhost:8000/ws/stream');
-ws.send(JSON.stringify({frame: base64Image}));</pre>
-                    </div>
-                </div>
-            </section>
-
-        </div>
+        <section class="panel panel-stream">
+            <h3>Live Stream Analyzer</h3>
+            <video id="videoStream" class="video-player" autoplay muted playsinline></video>
+            <div class="btn-row">
+                <button class="btn btn-secondary" id="startStreamBtn">Start Camera</button>
+                <button class="btn btn-danger" id="stopStreamBtn" disabled>Stop Camera</button>
+            </div>
+            <div class="stream-stats" id="streamStats" hidden>
+                <article><span>FPS</span><strong id="fps">0</strong></article>
+                <article><span>Vehicles</span><strong id="streamVehicles">0</strong></article>
+                <article><span>Congestion</span><strong id="streamCongestion">LOW</strong></article>
+            </div>
+        </section>
     </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2024 AerialVision | Built for Urban Traffic Intelligence</p>
-        </div>
-    </footer>
 
     <script src="/static/script.js"></script>
 </body>
